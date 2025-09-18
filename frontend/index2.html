@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBOE: AI Lyric Analyzer</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { background-color: #0A0A0A; color: #E0E0E0; font-family: 'Noto Sans KR', sans-serif; }
+        .font-title { font-family: 'Nanum Myeongjo', serif; }
+        .card { background-color: rgba(26, 26, 26, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); }
+        .chat-bubble { max-width: 85%; padding: 12px 18px; border-radius: 22px; line-height: 1.6; }
+        .user-bubble { background-color: #3B82F6; color: white; align-self: flex-end; border-bottom-right-radius: 6px; }
+        .ai-bubble { background-color: #334155; color: #E0E0E0; align-self: flex-start; border-bottom-left-radius: 6px; }
+        .loading-dots span { width: 8px; height: 8px; margin: 0 3px; background-color: #9CA3AF; border-radius: 50%; display: inline-block; animation: bounce 1.4s infinite ease-in-out both; }
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+        .suggestion-chip {
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background-color 0.2s;
+        }
+        .suggestion-chip:hover { background-color: rgba(255, 255, 255, 0.2); }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 py-16 md:py-24 max-w-4xl">
+
+        <header class="text-center mb-24 md:mb-32">
+            <h1 class="font-title text-4xl md:text-6xl font-bold tracking-widest">OBOE</h1>
+             
+
+            <p class="text-gray-400 mt-4 text-lg md:text-2xl">양홍원의 정규2집 오보에</p>
+            <p class="text-gray-500 mt-2 text-sm md:text-base">AI의 시선으로 바라본 가사의 의미와 구조</p>
+            <div class="flex justify-center my-2 md:my-24 fade-in fade-in-delay-2">
+                    <img src="images/오보에1.jpg" alt="Yang Hong Won concert" class="w-64 h-auto mix-blend-lighten"/>
+                </div>
+        </header>
+
+        <section class="mb-24 md:mb-32">
+            <div class="card p-6 md:p-8 rounded-xl">
+                <h2 class="font-title text-2xl md:text-3xl font-semibold mb-6 text-center">앨범의 유기적 서사</h2>
+                <div class="space-y-4 text-gray-300">
+                    <p>양홍원의 『오보에』는 단순한 곡의 모음이 아닌, 첫 트랙부터 마지막 트랙까지 하나의 이야기로 긴밀하게 이어지는 콘셉트 앨범입니다. 앨범명 '오보에'는 세 가지 중의적인 의미를 담고 있습니다: 목관악기 오보에의 음울한 소리, '다섯 걸음(五步)'이라는 은유, 그리고 잘못된 소문을 뜻하는 '오보(誤報)'입니다.</p>
+                    <p>특히 앨범의 영문 부제인 "3 Steps Forward, 2 Steps Back"은 앨범 전체를 관통하는 핵심 서사 구조를 암시합니다. 이는 화자가 꿈속에서 3일을 방황하며 나아갔다가, 다시 현실로 2일을 되돌아와 결과적으로 한 걸음 성장하는 '3보 전진 2보 후퇴'의 과정을 상징합니다. 
+                    <p>이처럼 앨범은 연인과의 이별과 자신의 잘못으로 인한 고통 속에서 가면을 쓰고 방황하지만, 결국 현실을 직시하고 성장에 이르는 영화 같은 구성을 보여줍니다.</p>
+ </p>               
+                </div>
+            </div>
+
+        <section class="mt-24 md:mt-32">
+            <h2 class="font-title text-center text-3xl md:text-4xl font-bold mb-12 md:mb-16">트랙 소개</h2>
+            
+            <div class="space-y-16">
+                <!-- 1. 실 (Thread) -->
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">1. 실 (Thread)</h3>
+                    <p class="text-gray-500 mb-6 italic">"사실로 엉킨 실로 노를 저어 멀리로"</p>
+                    <div class="flex justify-center my-2"> </div>
+    
+                    <p class="text-gray-300 leading-relaxed">앨범의 시작을 알리는 이 곡은 '첫 이별'의 아픔을 다룹니다. 제목 '실'은 '사실'과의 언어유희를 통해 외면하고픈 진실과 엉켜버린 관계를 상징하며, 동시에 앞으로 이어질 이야기의 '실마리'라는 중의적 의미를 갖습니다.</p>
+                </div>
+
+                <!-- 2. 한시 (01:00 AM) -->
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">2. 한시 (01:00 AM)</h3>
+                    <p class="text-gray-500 mb-6 italic">"겨우 사랑한다고 말하고 가기엔 난 가야 할 이유가 없지"</p>
+                     <div class="flex justify-center my-2"></div>
+                    <p class="text-gray-300 leading-relaxed">새벽 1시의 방황을 그립니다. 화자는 이별 후 갈 곳을 잃고, 술에 취해 다른 사람에게서 일시적인 위안을 찾지만, 그 관계의 공허함만 확인하게 됩니다. 머물러야 할 이유도, 떠나야 할 명분도 찾지 못하는 위태로운 상태를 보여줍니다.</p>
+                </div>
+
+                <!-- 3. 낮에 (En plein jour) -->
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">3. 낮에 (En plein jour)</h3>
+                    <p class="text-gray-500 mb-6 italic">"Sun comes up 괴로워, 이 느낌이 오면 새로워지지 다시"</p>
+                     <div class="flex justify-center my-2"> </div>
+        
+                    <p class="text-gray-300 leading-relaxed">현실 도피와 자기 파괴적인 순환을 노래합니다. 화자에게 '낮'은 직면해야 할 고통이며, 이를 잊기 위해 약물이나 술에 의존합니다. 중독을 통해 잠시나마 '새로워지는' 감각을 느끼지만, 결국 감정이 무뎌지며 자신을 잃어가는 과정을 처절하게 보여줍니다.</p>
+                </div>
+
+                <!-- 4. 아직 (,yet) -->
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">4. 아직 (,yet)</h3>
+                    <p class="text-gray-500 mb-6 italic">"거짓말해 줘 나한테 차라리 그게 더 나을지도"</p>
+                     <div class="flex justify-center my-2"> </div>
+                
+                    <p class="text-gray-300 leading-relaxed">'아직'은 앨범의 서사가 현실에서 꿈(환상)으로 전환되는 매우 중요한 분기점입니다. 화자는 잔혹한 진실을 견디지 못하고 "차라리 달콤한 거짓말로 위로받고 싶다"는 심정으로 현실 도피를 시작하며, 악몽 같은 내면세계로 깊숙이 빠져듭니다.</p>
+                </div>
+
+                <!-- 5. 탈 (Mask/Trouble) -->
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">5. 탈 (Mask/Trouble)</h3>
+                    <p class="text-gray-500 mb-6 italic">"가면이 완성되겠지, 가려줘 우리 탈을"</p>
+                     <div class="flex justify-center my-2"> </div>
+                
+                    <p class="text-gray-300 leading-relaxed">제목 '탈'은 '가면'과 '문제'라는 중의적 의미를 갖습니다. 화자는 과거의 상처를 숨기기 위해 자신을 태워 연기(smoke/acting)로 모든 것을 가리려 합니다. 이는 진실된 소통의 부재와 그로 인해 완성되어 버린 '가면' 뒤에 숨은 공허한 자아를 의미합니다.</p>
+                </div>
+
+                <!-- 6. 하긴 (well,) -->
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">6. 하긴 (well,)</h3>
+                    <p class="text-gray-500 mb-6 italic">"지워 내 안에 아이, 기억이 안 나 어디야 여긴"</p>
+                     <div class="flex justify-center my-2"> </div>
+                    <p class="text-gray-300 leading-relaxed">쾌락을 통한 자기 말소(抹消)를 다룹니다. 화자는 상처를 잊기 위해 방탕한 생활에 기대지만, 그 과정에서 순수했던 내면의 '아이'를 지워버리고 정체성마저 잃어버립니다. 공허함을 채우기 위해 더 큰 공허함으로 빠져드는 역설을 보여줍니다.</p>
+                </div>
+                
+                <!-- 7. 0001 -->
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">7. 0001</h3>
+                    <p class="text-gray-500 mb-6 italic">"거꾸로 가려 해 like moonwalk"</p>
+                     <div class="flex justify-center my-2"> </div>
+                    
+                    <p class="text-gray-300 leading-relaxed">꿈속에서의 방황을 끝내고 현실로 돌아가려는 결심을 상징하는 전환점입니다. 화자는 "꿈이니까 꿈이지, 꿈 병신아"라며 스스로를 다그치고, 시간을 거슬러 올라가듯("like moonwalk") 환상에서 깨어나려 합니다. 이는 현실 귀환의 중요한 암시입니다.</p>
+                </div>
+
+                <!-- 8. 가면무도회 (Masquerade) -->
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">8. 가면무도회 (Masquerade)</h3>
+                    <p class="text-gray-500 mb-6 italic">"나 혼자 가면무도회, 그 미소마저 함부로 해"</p>
+                     <div class="flex justify-center my-2"> </div>
+                    
+                    <p class="text-gray-300 leading-relaxed">앨범의 감정적 절정으로, 꿈에서 깬 화자가 스스로 썼던 가면을 벗어 던지는 순간을 다룹니다. "난 누굴 위해서 나였던 건지" 절규하며 과거를 후회하고, 마침내 미성숙한 자신의 본모습("아이처럼 생겼네")과 마주합니다. 고통스럽지만 진정한 자신을 대면하는 첫걸음입니다.</p>
+                </div>
+
+                <!-- 9. 사계 (4 Seasons) -->
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">9. 사계 (4 Seasons)</h3>
+                    <p class="text-gray-500 mb-6 italic">"불신이라는 꽃을 피우네, 향이 나게 해 껍질은, 차를 달이길 30에는"</p>
+                     <div class="flex justify-center my-2"> </div>
+                   
+                    <p class="text-gray-300 leading-relaxed">앨범의 대미를 장식하는 타이틀곡으로, 모든 서사를 마무리하며 성장의 메시지를 전달합니다. 화자는 결국 사람에게 받은 상처는 변함없이 돌아오는 시간의 흐름('사계')을 통해 치유됨을 깨닫습니다. 과거의 상처('불신이라는 꽃')조차 훗날 인생의 깊은 풍미('차')로 우려내길 바라는 성숙한 다짐을 보여줍니다.</p>
+                </div>
+            </div>
+        </section>
+        
+        </section>
+        <div class="flex justify-center my-2 md:my-24 fade-in fade-in-delay-2">
+                    <img src="images/단콘.jpg" alt="Yang Hong Won concert" class="w-64 h-auto mix-blend-lighten"/>
+                </div>
+        <section class="mb-24 md:mb-32">
+            <div class="text-center max-w-2xl mx-auto">
+                <h2 class="font-title text-2xl md:text-3xl font-semibold mb-4">How AI Understands Poetry</h2>
+                <p class="text-gray-400 leading-relaxed">
+                    양홍원의 가사는 단순한 단어의 나열이 아닌, 복잡한 감정과 은유의 집합체입니다. AI가 이 깊이를 이해하기 위해선, 원본 텍스트를 AI의 언어로 '번역'하는 과정이 필수적입니다. </p>
+                <p class="text-gray-400 leading-relaxed">이 과정은 '전처리'와 '임베딩'이라는 핵심 단계를 거치며, AI가 가사의 숨겨진 맥락을 파악하고 깊이 있는 해석을 생성하는 기반이 됩니다.
+                </p>
+            </div>
+        </section>
+        
+        <section class="mt-24 md:mt-32">
+            <div class="space-y-10 md:space-y-20">
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">1. 실 (Thread)</h3>
+                    <p class="text-gray-500 mb-6 italic">"사실로 엉킨 실로 노를 저어 멀리로"</p>
+                      <div class="flex justify-center my-2 md:my-24 fade-in fade-in-delay-2">
+                    <img src="images/실.jpg" alt="Yang Hong Won concert" class="w-64 h-auto mix-blend-lighten"/>
+                </div>
+                    <h4 class="font-semibold text-purple-300 mb-2">AI-Generated Interpretation:</h4>
+                    <p class="text-gray-300 leading-relaxed">
+                        앨범의 시작을 알리는 이 곡은 '첫 이별'의 아픔을 다룹니다. 제목 '실'은 '사실'과의 언어유희를 통해 외면하고픈 진실과 엉켜버린 관계를 상징하며, 동시에 앞으로 이어질 이야기의 '실마리'라는 중의적 의미를 갖습니다. 화자는 이 고통스러운 진실("사실로 엉킨 실")을 오히려 앞으로 나아가는 동력("노")으로 삼아 과거로부터 벗어나려는 처절한 의지를 보여줍니다.
+                    </p>
+                </div>
+
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">4. 아직 (,yet)</h3>
+                    <p class="text-gray-500 mb-6 italic">"거짓말해 줘 나한테 차라리 그게 더 나을지도"</p>
+                <div class="flex justify-center my-2 md:my-24 fade-in fade-in-delay-2">
+                    <img src="images/아직.jpg" alt="Yang Hong Won concert" class="w-64 h-auto mix-blend-lighten"/>
+                </div>
+                    <h4 class="font-semibold text-purple-300 mb-2">AI-Generated Interpretation:</h4>
+                    <p class="text-gray-300 leading-relaxed">
+                        '아직'은 앨범의 서사가 현실에서 꿈(환상)으로 전환되는 매우 중요한 분기점입니다. 화자는 자신의 잘못으로 인해 주변의 시선이 싸늘해진 현실에 고통받으며, 결국 잔혹한 진실을 견디지 못하고 "차라리 달콤한 거짓말로 위로받고 싶다"는 심정으로 현실 도피를 시작합니다. 이 곡을 기점으로 화자의 방황은 악몽 같은 내면세계로 깊숙이 빠져듭니다.
+                    </p>
+                </div>
+
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">8. 가면무도회 (Masquerade)</h3>
+                    <p class="text-gray-500 mb-6 italic">"나 혼자 가면무도회, 그 미소마저 함부로 해"</p>
+                <div class="flex justify-center my-2 md:my-24 fade-in fade-in-delay-2">
+                    <img src="images/가면무도회.jpg" alt="Yang Hong Won concert" class="w-64 h-auto mix-blend-lighten"/>
+                </div>
+
+                    <h4 class="font-semibold text-teal-300 mb-2">AI-Generated Interpretation:</h4>
+                    <p class="text-gray-300 leading-relaxed">
+                        앨범의 감정적 절정을 이루는 곡으로, 꿈에서 깨어난 화자가 스스로 썼던 가면을 벗어 던지는 순간을 다룹니다. 화자는 "난 누굴 위해서 나였던 건지" 절규하며 타인의 시선 속에 갇혀 있던 과거를 후회하고, 마침내 가면을 벗고 미성숙한 자신의 본모습("아이처럼 생겼네")과 마주합니다. 이는 완전한 해소가 아닌, 고통스럽지만 진정한 자기 자신을 대면하는 첫걸음을 의미합니다.
+                    </p>
+                </div>
+
+                <div class="card p-6 md:p-8 rounded-xl">
+                    <h3 class="font-title text-2xl font-bold mb-2">9. 사계 (4 Seasons)</h3>
+                    <p class="text-gray-500 mb-6 italic">"불신이라는 꽃을 피우네, 향이 나게 해 껍질은, 차를 달이길 30에는"</p>
+                    <div class="flex justify-center my-2 md:my-24 fade-in fade-in-delay-2">
+                    <img src="images/사계.jpg" alt="Yang Hong Won concert" class="w-64 h-auto mix-blend-lighten"/>
+                </div>
+                    <h4 class="font-semibold text-teal-300 mb-2">AI-Generated Interpretation:</h4>
+                    <p class="text-gray-300 leading-relaxed">
+                        앨범의 대미를 장식하는 타이틀곡으로, 모든 서사를 마무리하며 성장의 메시지를 전달합니다. 화자는 결국 사람에게 받은 상처는 변함없이 돌아오는 시간의 흐름('사계')을 통해 치유됨을 깨닫습니다. 특히 마지막 구절은 과거의 상처('불신이라는 꽃')조차 훗날 30대가 되었을 때는 인생의 깊은 풍미('차')로 우려낼 수 있기를 바라는, 성숙한 다짐을 보여주며 깊은 여운을 남깁니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- <section class="mt-24 md:mt-32">
+            <main>
+                <div class="card p-6 md:p-8 rounded-xl flex flex-col">
+                    <h3 class="font-title text-2xl font-bold mb-4 text-teal-300">AI에게 분석 물어보기</h3>
+                    
+                    <div id="chat-window" class="flex-1 h-96 overflow-y-auto mb-4 p-3 flex flex-col space-y-4">
+                        <div class="chat-bubble ai-bubble">안녕하세요! 저는 양홍원의 '오보에' 앨범 분석 문서를 학습한 AI 평론가입니다. 앨범의 서사, 가사의 중의적 의미, 팬들의 해석 등 무엇이든 물어보세요.</div>
+                    </div>
+
+                    <div id="suggestion-area" class="flex flex-wrap gap-2 mb-4">
+                        <div class="suggestion-chip text-sm py-1 px-3 rounded-full">앨범의 전체적인 주제가 뭐야?</div>
+                        <div class="suggestion-chip text-sm py-1 px-3 rounded-full">'3보 전진 2보 후퇴'의 의미는?</div>
+                        <div class="suggestion-chip text-sm py-1 px-3 rounded-full">타이틀곡 '사계' 가사 해석해줘</div>
+                    </div>
+
+                    <div id="loading-indicator" class="hidden my-2 pl-2">
+                        <div class="chat-bubble ai-bubble loading-dots"><span></span><span></span><span></span></div>
+                    </div>
+
+                    <form id="chat-form" class="flex space-x-3">
+                        <input type="text" id="chat-input" placeholder="앨범에 대해 질문해보세요..." class="flex-1 bg-gray-800 border border-gray-600 rounded-full px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-400 text-white transition-all">
+                        <button type="submit" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-6 rounded-full transition-colors">전송</button>
+                    </form>
+                </div>
+            </main>
+        </section>
+
+        <footer class="text-center mt-16 pt-8 border-t border-white/10">
+            <p class="text-gray-600">AI-Powered Lyric Analysis Project based on RAG.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatWindow = document.getElementById('chat-window');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const suggestionArea = document.getElementById('suggestion-area');
+
+            const appendMessage = (text, sender) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `chat-bubble ${sender === 'user' ? 'user-bubble' : 'ai-bubble'}`;
+                messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+                chatWindow.appendChild(messageDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            };
+
+            const askQuestion = async (question) => {
+                if (!question) return;
+
+                appendMessage(question, 'user');
+                chatInput.value = '';
+                loadingIndicator.style.display = 'block';
+                suggestionArea.style.display = 'none';
+
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/ask', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ question })
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        throw new Error(errData.error || '서버 응답 오류');
+                    }
+
+                    const data = await response.json();
+                    appendMessage(data.answer, 'ai');
+                } catch (error) {
+                    appendMessage(`죄송합니다, 오류가 발생했습니다: ${error.message}`, 'ai');
+                } finally {
+                    loadingIndicator.style.display = 'none';
+                }
+            };
+            
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                askQuestion(chatInput.value.trim());
+            });
+
+            suggestionArea.addEventListener('click', (e) => {
+                if (e.target.classList.contains('suggestion-chip')) {
+                    const question = e.target.textContent;
+                    chatInput.value = question;
+                    askQuestion(question);
+                }
+            });
+        });
+    </script> -->
+</body>
+</html>
