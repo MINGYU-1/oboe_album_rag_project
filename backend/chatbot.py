@@ -1,3 +1,4 @@
+
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -56,7 +57,7 @@ class OboeChatbot:
 
     def _setup_conversational_chain(self):
         """LangChain을 사용하여 대화형 검색 체인을 설정합니다."""
-        llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.7, streaming=True)
+        llm = ChatOpenAI(model_name="gpt-4.1-nano", temperature=0.7, streaming=True)
         
         # _setup_conversational_chain 메서드 내부
         prompt_template = """

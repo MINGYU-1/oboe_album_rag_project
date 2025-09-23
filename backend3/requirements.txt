@@ -1,0 +1,17 @@
+# backend3/requirements.txt
+# Core
+langchain
+langgraph
+langchain-openai
+langchain-community
+
+# Tools & Data
+pypdf
+chromadb
+python-dotenv
+duckduckgo-search
+lxml
+
+# Web Server
+flask
+flask-cors
