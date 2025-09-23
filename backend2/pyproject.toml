@@ -1,0 +1,18 @@
+[project]
+name = "backend2"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+  "flask>=3.0.0",
+  "langgraph>=0.6.0",
+  "langgraph-cli>=0.4.0",
+  "langchain>=0.3.12",
+  "langchain-community>=0.3.12",
+  "langchain-core>=0.3.12",
+  "langchain-openai>=0.2.2",
+  "chromadb>=0.5.5",
+  "pypdf>=4.3.1",
+]
+
+[tool.langgraph]
+# 최신 CLI는 config 파일을 요구하므로 별도 langgraph.json을 사용합니다.

@@ -54,7 +54,52 @@
  </p>               
                 </div>
             </div>
+        <section class="mb-24 md:mb-32"></section>
+         <div class="space-y-12 md:space-y-20">
+                <div class="card p-6 md:p-8 rounded-xl fade-in fade-in-delay-1">
+                    <h3 class="font-title text-xl md:text-2xl font-bold text-purple-300 mb-4">Part 1. 정제 (Preprocessing)</h3>
+                    <p class="text-gray-400 mb-6">AI가 가사를 학습하기 전, 날것의 텍스트를 의미 있는 단위로 나누고 정제합니다. 불필요한 노이즈를 제거하고, 핵심 의미를 담은 '조각(Chunk)'으로 분할하는 과정은 AI의 이해도를 높이는 첫걸음입니다.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-black/30 p-4 rounded">
+                            <h4 class="font-semibold mb-2 text-gray-300">원본 가사 (Raw Text)</h4>
+                             <p class="text-sm text-gray-500 font-mono whitespace-pre-line">흘러가길 피로 
+ 흘러가길 1로 
+ 이건 내 첫 이별 
+ 향수 선물같이 비려 
+ 포장해 편지를 
+ 예쁜 꽃 가시로           </p>
+                        </div>
+                        <div class="bg-black/30 p-4 rounded">
+                            <h4 class="font-semibold mb-2 text-gray-300">의미 단위 분할 (Chunking)</h4>
+                            <div class="space-y-2">
+                                 <p class="text-sm text-gray-400 font-mono border-l-2 border-purple-400 pl-2">Chunk 1: "흘러가길 피로, 흘러가길 1로, 이건 내 첫 이별" </p>
+                                 <p class="text-sm text-gray-400 font-mono border-l-2 border-purple-400 pl-2">Chunk 2: "향수 선물같이 비려, 포장해 편지를 예쁜 꽃 가시로" </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
+                <div class="card p-6 md:p-8 rounded-xl fade-in fade-in-delay-2">
+                    <h3 class="font-title text-xl md:text-2xl font-bold text-teal-300 mb-4">Part 2. 번역 (Embedding)</h3>
+                    <p class="text-gray-400 mb-6">정제된 텍스트 조각들은 수많은 차원을 가진 '의미의 공간' 속 벡터(좌표)로 변환됩니다. '이별'과 '상실'은 가까운 곳에, '환희'와 '성취'는 다른 곳에 위치하게 됩니다. 이 과정을 통해 AI는 단어와 문장의 미묘한 의미적 관계를 학습합니다.</p>
+                    <div class="p-4 bg-black/30 rounded text-center">
+                         <p class="font-mono text-teal-400 text-sm md:text-base">"내 첫 이별"  <span class="text-gray-500 font-sans mx-2">→</span>  [0.012, -0.98, ..., 0.453]</p>
+                        <p class="text-xs text-gray-500 mt-2">텍스트가 AI가 이해할 수 있는 고차원 벡터로 변환됩니다.</p>
+                    </div>
+                </div>
+                
+                <div class="card p-6 md:p-8 rounded-xl fade-in fade-in-delay-3">
+                    <h3 class="font-title text-xl md:text-2xl font-bold text-amber-300 mb-4">Part 3. 해석 (Retrieval & Generation)</h3>
+                    <p class="text-gray-400 mb-6">"양홍원의 가사에서 '이별'은 어떻게 표현되나?" 라는 질문에, AI는 벡터 공간에서 질문과 가장 가까운 가사 조각들을 검색(Retrieve)합니다. 그리고 이 조각들을 근거로, 질문에 대한 깊이 있는 답변을 새롭게 생성(Generate)합니다.</p>
+                    <div class="p-4 bg-black/30 rounded">
+                        <p class="font-semibold text-gray-300">질문: <span class="font-normal text-gray-400">"가사 속 화자는 이별을 어떻게 받아들이고 있나?"</span></p>
+                        <hr class="border-gray-700 my-3">
+                        <p class="font-semibold text-gray-300">AI의 답변 생성 과정:</p>
+                        <p class="text-sm text-amber-400 mt-2 font-mono">1.  <span class="text-gray-500">Retrieve relevant chunks:</span> ["...첫 이별"  , "...선물같이 비려"  , "...예쁜 꽃 가시로"]</p>
+                        <p class="text-sm text-amber-400 mt-1 font-mono">2.  <span class="text-gray-500">Generate answer based on context:</span> "화자에게 이별은 피와 같이 고통스럽지만 , 동시에 가시 돋친 꽃으로 포장된 선물처럼 양가적인 감정으로 다가옵니다..."</p>
+                    </div>
+                </div>
+            </div>    
         <section class="mt-24 md:mt-32">
             <h2 class="font-title text-center text-3xl md:text-4xl font-bold mb-12 md:mb-16">트랙 소개</h2>
             

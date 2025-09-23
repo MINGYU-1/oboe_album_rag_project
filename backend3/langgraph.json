@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "my_agent.agent"
+  ],
+  "graphs": {
+    "default": "my_agent.agent:app"
+  }
+}

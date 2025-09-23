@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "backend2.app.graph"
+  ],
+  "graphs": {
+    "default": "backend2.app.graph:app"
+  }
+}

@@ -1,0 +1,21 @@
+# --- Web server ---
+Flask>=3.0,<4
+Flask-Cors>=4.0,<5
+python-dotenv>=1.0,<2
+
+# --- LangGraph (그래프 실행 + Dev UI) ---
+langgraph>=0.6.7,<0.7
+langgraph-cli>=0.4.2,<0.5
+
+# --- RAG 스택 ---
+langchain>=0.3.12,<0.4
+langchain-core>=0.3.12,<0.4
+langchain-community>=0.3.12,<0.4
+langchain-openai>=0.2.2,<0.3
+langchain-text-splitters>=0.3.2,<0.4
+openai>=1.40,<2
+chromadb>=0.5.5,<0.6
+pypdf>=4.3.1,<5
+
+# --- Optional(권장): 유틸리티 ---
+tqdm>=4.66,<5
