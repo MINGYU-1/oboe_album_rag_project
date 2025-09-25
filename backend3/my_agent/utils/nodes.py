@@ -1,97 +1,97 @@
-# backend3/my_agent/utils/nodes.py
+# my_agent/utils/nodes.py
+from __future__ import annotations
 
-from typing import Dict, Any
-from langchain_core.prompts import ChatPromptTemplate  # [개선] 명시적인 import 추가
+from typing import Dict, Any, List
 
-from .state import AgentState
-from .tools import (
-    normalize_openai_key,
-    ensure_paths,
-    build_components,
-    format_docs,
-    web_search_and_load,
-    want_web,
-)
+from my_agent.utils.tools import web_search_duckduckgo, fetch_text
+from my_agent.utils.state import AgentState
 
-# --- 기존 노드 함수 (validate_node, retrieve_node, generate_node, finalize_node) ---
-# ... (이 부분은 수정 없이 그대로 둡니다)
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 
 
-# ## --- ✨ 자기 수정(Self-Correction)을 위한 노드들 --- ##
+def _build_web_context(pages: List[Dict[str, str]], per_page_limit: int = 1800) -> str:
+    """LLM 컨텍스트 문자열 생성(페이지당 내용 길이 제한)"""
+    blocks: List[str] = []
+    for i, p in enumerate(pages, 1):
+        text = (p.get("text") or "")[:per_page_limit]
+        blocks.append(f"[{i}] {p.get('title','')} — {p.get('url','')}\n{text}")
+    return "\n\n".join(blocks)
 
-def prepare_for_retrieval_node(state: AgentState) -> Dict[str, Any]:
-    """검색 실행 전, 재시도 횟수 초기화 및 검색어 설정"""
-    retries = state.get("retries_left", 2)
-    search_query = state.get("search_query", state["question"])
-    
-    # [개선] 변경된 값만 명확하게 반환하여 그래프의 데이터 흐름을 예측하기 쉽게 만듭니다.
-    return {
-        "retries_left": retries,
-        "search_query": search_query
-    }
 
-def grade_answer_node(state: AgentState) -> Dict[str, Any]:
-    """생성된 답변을 평가(Grade)하여 'sufficient' 또는 'insufficient'로 판단"""
-    print("--- 🧐 답변 평가 중... ---")
+def web_node(state: AgentState) -> AgentState:
+    """
+    웹 검색/스크래핑 → 컨텍스트 조립 → LLM 요약 답변 생성.
+    입력: state['question'] 또는 state['search_query']
+    출력: state에 answer / citations / error 병합
+    """
+    new_state: AgentState = dict(state)  # 원본 보존
+
+    # 1) 질의 확보
+    q = (state.get("search_query") or state.get("question") or "").strip()
+    if not q:
+        new_state["error"] = "질문이 비어 있습니다. 'question' 또는 'search_query' 필드를 채워주세요."
+        return new_state
+
     try:
-        comps = build_components()
-        
-        grading_prompt = ChatPromptTemplate.from_messages([
-            ("system", "당신은 답변의 품질을 평가하는 엄격한 평가자입니다. 주어진 '문서 내용'만을 근거로 '답변'이 '질문'에 충분하고 정확하게 답했는지 평가해야 합니다. 답변은 'sufficient' 또는 'insufficient' 둘 중 하나로만 해야 합니다."),
-            ("user", "질문: {question}\n\n문서 내용:\n{context}\n\n답변:\n{answer}")
-        ])
-        
-        grader_chain = grading_prompt | comps["llm"]
-        
-        result = grader_chain.invoke({
-            "question": state["question"],
-            "context": state["context"],
-            "answer": state["answer"]
-        })
-        
-        grade = result.content.strip().lower()
-        print(f"--- 평가 결과: {grade} ---")
-        
-        if "insufficient" in grade:
-            print("--- 🚨 답변이 불충분하여 질문 재구성을 시도합니다. ---")
-            # [개선] 변경된 값만 명확하게 반환합니다.
-            return {
-                "retries_left": state["retries_left"] - 1,
-                "error": "graded_insufficient"
-            }
-        else:
-            # 평가 통과 시, 재시도 오류 상태를 명시적으로 제거
-            return {"error": None}
-            
-    except Exception as e:
-        return {"error": f"답변 평가 중 오류: {e}"}
+        # 2) DDG 검색 (tools.py 시그니처에 맞춤: max_results, 반환키 title/url/snippet)
+        results = web_search_duckduckgo(q, max_results=5)
 
-def rewrite_query_node(state: AgentState) -> Dict[str, Any]:
-    """더 나은 검색 결과를 위해 질문을 재구성"""
-    print("--- ✍️ 질문 재구성 중... ---")
-    try:
-        comps = build_components()
-        
-        rewriting_prompt = ChatPromptTemplate.from_messages([
-            ("system", "당신은 사용자의 질문을 벡터 검색에 더 적합하도록 명확한 검색어로 재구성하는 전문가입니다. 원본 질문의 핵심 의도는 유지하되, 문서에서 찾기 쉬운 키워드 중심으로 변환해주세요."),
-            ("user", "이전 대화: {chat_history}\n\n원본 질문: {question}\n\n재구성된 검색어:")
+        # 3) 본문 수집(최대 3페이지)
+        pages: List[Dict[str, str]] = []
+        for r in results:
+            url = r.get("url") or ""
+            if not url:
+                continue
+            try:
+                body = fetch_text(url)
+            except Exception:
+                continue
+            if len(body) < 400:  # 본문이 너무 짧으면 제외
+                continue
+            pages.append({"title": r.get("title", ""), "url": url, "text": body})
+            if len(pages) >= 3:
+                break
+
+        # 4) 본문이 없으면 링크만 안내
+        if not pages:
+            new_state["answer"] = (
+                "문서에서 직접 근거를 찾지 못해 관련 웹 자료를 확인했습니다.\n\n" +
+                "\n".join(f"- {r.get('title','')} — {r.get('url','')}" for r in results if r.get("url"))
+            )
+            new_state["citations"] = new_state.get("citations", []) + [
+                {"web": r.get("url", ""), "title": r.get("title", "")}
+                for r in results if r.get("url")
+            ]
+            return new_state
+
+        # 5) LLM 컨텍스트 조립
+        web_context = _build_web_context(pages)
+
+        # 6) LLM 호출
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+        prompt = ChatPromptTemplate.from_messages([
+            ("system",
+             "당신은 한국어 전문 요약가입니다. 아래 웹 자료만 근거로 간결하고 정확한 답을 만듭니다. "
+             "추측을 금지하고, 모호하면 모른다고 말합니다. 반드시 존댓말을 사용합니다."),
+            ("user",
+             "질문: {question}\n\n"
+             "웹 자료(인용가능):\n{web_context}\n\n"
+             "요구사항:\n"
+             "1) 핵심 답변을 5문장 이내로 한국어로 제시\n"
+             "2) 마지막에 '출처' 섹션을 번호와 URL로 나열")
         ])
-        
-        rewriter_chain = rewriting_prompt | comps["llm"]
-        
-        result = rewriter_chain.invoke({
-            "chat_history": state.get("chat_history", []),
-            "question": state["question"]
-        })
-        
-        new_query = result.content.strip()
-        print(f"--- 재구성된 질문: {new_query} ---")
-        
-        # [개선] 변경된 값과 초기화할 값을 명확하게 반환합니다.
-        return {
-            "search_query": new_query,
-            "error": None  # 재시도 상태를 초기화
-        }
-        
+        chain = prompt | llm | StrOutputParser()
+        answer = chain.invoke({"question": q, "web_context": web_context})
+
+        # 7) 상태 병합
+        new_state["answer"] = answer
+        new_state["citations"] = new_state.get("citations", []) + [
+            {"web": p["url"], "title": p["title"]} for p in pages
+        ]
+        return new_state
+
     except Exception as e:
-        return {"error": f"질문 재구성 중 오류: {e}"}
+        new_state["error"] = f"[웹 검색 실패] {e}"
+        return new_state
