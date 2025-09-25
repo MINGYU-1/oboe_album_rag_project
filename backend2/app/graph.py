@@ -1,17 +1,12 @@
 from __future__ import annotations
 
 import os
-import sys
 import re
+import sys
 import html
 import operator
 from functools import lru_cache
 from typing import TypedDict, Annotated, List, Dict, Any, Optional
-
-# 프로젝트 루트를 sys.path에 추가하여 'backend2' 모듈을 찾을 수 있도록 함
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if PROJECT_ROOT not in sys.path:
-    sys.path.append(PROJECT_ROOT)
 
 from dotenv import load_dotenv
 load_dotenv()  # backend2/.env 자동 로드

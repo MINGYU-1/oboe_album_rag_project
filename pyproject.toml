@@ -1,0 +1,5 @@
+[tool.langgraph]
+# langgraph up/dev 명령어로 이 그래프를 시작합니다.
+# 'module'은 '패키지.모듈:객체' 형식입니다.
+# 'backend2' 패키지 안의 'app.graph' 모듈에서 'app' 객체를 찾습니다.
+module = "backend2.app.graph:app"
