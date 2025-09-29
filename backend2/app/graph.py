@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import re
-import sys
 import html
 import operator
 from functools import lru_cache
@@ -27,26 +26,31 @@ from langchain.schema import Document
 
 
 # ========= 환경설정 =========
-ROOT_DIR = os.path.dirname(os.path.dirname(__file__))  # backend2/
+ROOT_DIR = os.path.dirname(os.path.dirname(__file__))  # 현재 파일이 있는 폴더의 상위 폴더(backend2/)
+# PDF 파일의 경로를 설정합니다. .env 파일에 OBOE_PDF_PATH가 없으면 기본 경로를 사용합니다.
 PDF_PATH = os.getenv("OBOE_PDF_PATH", os.path.join(ROOT_DIR, "data", "oboe.pdf"))
+# Chroma 벡터 DB를 저장할 폴더 경로를 설정합니다.
 CHROMA_DIR = os.getenv("CHROMA_DIR", os.path.join(ROOT_DIR, "chroma_store"))
+# 사용할 OpenAI 모델 이름을 설정합니다.
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+# 텍스트를 벡터로 변환할 임베딩 모델 이름을 설정합니다.
 EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-3-small")
+# 웹 검색 fallback 기능을 사용할지 여부를 설정합니다. ("0"이나 "false"가 아니면 True)
 ENABLE_WEB_FALLBACK = os.getenv("ENABLE_WEB_FALLBACK", "1") not in ("0", "false", "False")
 
 
 # ========= 상태 정의 =========
 class AgentState(TypedDict, total=False):
-    question: str
-    chat_history: Annotated[List[Dict[str, str]], operator.add]
-    # RAG
-    context: str
-    citations: Annotated[List[Dict[str, Any]], operator.add]
+    question: str  # 사용자의 질문
+    chat_history: Annotated[List[Dict[str, str]], operator.add] # 이전 대화 기록 (누적됨)
+    # RAG 관련 정보
+    context: str   # PDF에서 찾은 관련 내용
+    citations: Annotated[List[Dict[str, Any]], operator.add] # 출처 정보 (누적됨)
     # 생성 결과
-    answer: str
-    # 분기/에러
-    fallback: str
-    error: str
+    answer: str    # AI가 생성한 최종 답변
+    # 분기/에러 처리
+    fallback: str  # 작업 흐름을 바꿀 때 사용할 신호 (예: "web")
+    error: str     # 에러 메시지
 
 def _to_documents(docs_any) -> List[Document]:
     """

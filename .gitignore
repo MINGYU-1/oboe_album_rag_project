@@ -6,3 +6,6 @@
 *.pyc
 *.pckl
 *.pptx
+*.bin
+chroma.sqlite3
+*.pickle

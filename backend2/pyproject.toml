@@ -3,16 +3,19 @@ name = "backend2"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
-  "flask>=3.0.0",
-  "langgraph>=0.6.0",
-  "langgraph-cli>=0.4.0",
-  "langchain>=0.3.12",
-  "langchain-community>=0.3.12",
-  "langchain-core>=0.3.12",
-  "langchain-openai>=0.2.2",
-  "chromadb>=0.5.5",
-  "pypdf>=4.3.1",
+    "flask>=3.0.0",
+    "langgraph>=0.6.0",
+    "langgraph-cli>=0.4.0",
+    "langchain>=0.3.12",
+    "langchain-community>=0.3.12",
+    "langchain-core>=0.3.12",
+    "langchain-openai>=0.2.2",
+    "chromadb>=0.5.5",
+    "pypdf>=4.3.1",
+    "python-dotenv>=1.0.0", # .env 파일 로드를 위해 추가
+    "httpx>=0.27.0", # 웹 검색을 위해 추가
 ]
 
 [tool.langgraph]
-# 최신 CLI는 config 파일을 요구하므로 별도 langgraph.json을 사용합니다.
+# app 폴더 안의 backend2.py 파일에 있는 app 객체를 지정합니다.
+graph = "app.backend2:app"
